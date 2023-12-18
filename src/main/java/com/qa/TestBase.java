@@ -7,7 +7,6 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.support.events.EventFiringWebDriver;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -15,36 +14,30 @@ import java.util.concurrent.TimeUnit;
 
 public class TestBase {
     protected static ConfigFileReader configFileReader = new ConfigFileReader();
-    public static WebDriver driver;
+
+    public static WebDriver getDriver() {
+        return driver;
+    }
+
+    private static WebDriver driver;
     public static long PAGE_LOAD_TIMEOUT = 20;
     public static long IMPLICIT_WAIT = 20;
-    public static void initialization() throws MalformedURLException {
-        String browserName = configFileReader.getBrowserName();
+
+    protected static String browserName = configFileReader.getBrowserName();
+    protected static void initialization() throws MalformedURLException {
 
         if (configFileReader.getRemoteValue().equals("true")) {
+            getBrowserDriver(configFileReader.getSeleniumHubAddress());
+        } else if((configFileReader.getRemoteValue().equals("false")) && (configFileReader.getDockerValue().equals("false"))) {
             if (browserName.equals("chrome")) {
-                System.setProperty("webdriver.chrome.driver", configFileReader.getDriverPath() + "/chromedriver");
-                ChromeOptions chromeOptions = new ChromeOptions();
-                //options.addArguments("--headless");
-                chromeOptions.addArguments("--ignore-ssl-errors=yes");
-                chromeOptions.addArguments("--ignore-certificate-errors");
-                driver = new RemoteWebDriver(new URL(configFileReader.getSeleniumHubAddress()), chromeOptions);
-            } else if (browserName.equals("firefox")) {
-                System.setProperty("webdriver.gecko.driver", configFileReader.getDriverPath() + "/geckodriver");
-                FirefoxOptions fireFoxOptions = new FirefoxOptions();
-                //options.addArguments("--headless");
-                fireFoxOptions.addArguments("--ignore-ssl-errors=yes");
-                fireFoxOptions.addArguments("--ignore-certificate-errors");
-                driver = new RemoteWebDriver(new URL(configFileReader.getSeleniumHubAddress()), fireFoxOptions);
-            }
-        } else {
-            if (browserName.equals("chrome")) {
-                System.setProperty("webdriver.chrome.driver", "/Users/MuhsinKamal/Documents/MuhsinProjects/Selenium-POM/drivers" + "/chromedriver");
+                System.setProperty("webdriver.chrome.driver", System.getProperty("user.dir") + "/drivers" + "/chromedriver");
                 driver = new ChromeDriver();
             } else if (browserName.equals("firefox")) {
                 System.setProperty("webdriver.gecko.driver", "/Users/MuhsinKamal/Documents/MuhsinProjects/Selenium-POM/drivers" + "/geckodriver");
                 driver = new FirefoxDriver();
             }
+        } else {
+            getBrowserDriver(configFileReader.getLocalSeleniumHubAddress());
         }
 
         driver.manage().window().maximize();
@@ -53,5 +46,19 @@ public class TestBase {
         driver.manage().timeouts().implicitlyWait(IMPLICIT_WAIT, TimeUnit.SECONDS);
 
         driver.get(configFileReader.getApplicationUrl());
+    }
+
+    protected static void getBrowserDriver(String seleniumHubAddress) throws MalformedURLException {
+        if (browserName.equals("chrome")) {
+            ChromeOptions chromeOptions = new ChromeOptions();
+            chromeOptions.addArguments("--ignore-ssl-errors=yes");
+            chromeOptions.addArguments("--ignore-certificate-errors");
+            driver = new RemoteWebDriver(new URL(seleniumHubAddress), chromeOptions);
+        } else if (browserName.equals("firefox")) {
+            FirefoxOptions fireFoxOptions = new FirefoxOptions();
+            fireFoxOptions.addArguments("--ignore-ssl-errors=yes");
+            fireFoxOptions.addArguments("--ignore-certificate-errors");
+            driver = new RemoteWebDriver(new URL(seleniumHubAddress), fireFoxOptions);
+        }
     }
 }

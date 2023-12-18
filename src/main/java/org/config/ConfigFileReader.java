@@ -51,6 +51,12 @@ public class ConfigFileReader {
         else throw new RuntimeException("seleniumHubAddress not specified in the config.properties file.");
     }
 
+    public String getLocalSeleniumHubAddress() {
+        String url = properties.getProperty("localSeleniumHubAddress");
+        if(url != null) return url;
+        else throw new RuntimeException("localSeleniumHubAddress not specified in the config.properties file.");
+    }
+
     public String getBrowserName() {
         String url = properties.getProperty("browserName");
         if(url != null) return url;
@@ -61,5 +67,11 @@ public class ConfigFileReader {
         String url = properties.getProperty("remote");
         if(url != null) return url;
         else throw new RuntimeException("remote value is not specified in the config.properties file.");
+    }
+
+    public String getDockerValue() {
+        String url = properties.getProperty("docker");
+        if(url != null) return url;
+        else throw new RuntimeException("docker value is not specified in the config.properties file.");
     }
 }
